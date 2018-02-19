@@ -1,0 +1,39 @@
+{
+  "name": "ts-storage",
+  "version": "0.1.0",
+  "description": "Type-safe storage library with fallback values",
+  "keywords": [
+    "type-safe",
+    "localStorage",
+    "fallback",
+    "default",
+    "TypeScript"
+  ],
+  "author": {
+    "name": "Simon Alling",
+    "email": "alling.simon@gmail.com",
+    "url": "https://simonalling.se"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/simonalling/ts-storage",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonalling/ts-storage"
+  },
+  "bugs": {
+    "url": "https://github.com/simonalling/ts-storage"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -d -p .",
+    "deploy": "npm run build && npm publish"
+  },
+  "dependencies": {
+    "ts-type-guards": "^0.2.2"
+  },
+  "devDependencies": {
+    "ts-type-guards": "^0.2.2",
+    "typescript": "^2.6.1"
+  }
+}
