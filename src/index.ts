@@ -8,9 +8,9 @@ export const enum Status {
     LOCALSTORAGE_ERROR,
 }
 
-export type Response<T> = {
-    status: Status
-    value: T
+export interface Response<T> {
+    status: Status;
+    value: T;
 }
 
 export function get<T>(key: string, fallback: T): Response<T> {
@@ -41,7 +41,7 @@ export function get<T>(key: string, fallback: T): Response<T> {
             Status.LOCALSTORAGE_ERROR
         );
         return {
-            status: status,
+            status,
             value: fallback,
         };
     }
@@ -52,7 +52,7 @@ export function set<T>(key: string, value: T): Response<T> {
         saveToLocalStorage(key, value);
         return {
             status: Status.OK,
-            value: value,
+            value,
         };
     } catch (err) {
         const status = (
@@ -63,8 +63,8 @@ export function set<T>(key: string, value: T): Response<T> {
             Status.LOCALSTORAGE_ERROR
         );
         return {
-            status: status,
-            value: value,
+            status,
+            value,
         };
     }
 }
