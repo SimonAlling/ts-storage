@@ -55,8 +55,8 @@ export function set<T>(key: string, value: T): Response<T> {
             status: Status.OK,
             value: value,
         };
-    } catch {
-        if (is(DOMException)) {
+    } catch (err) {
+        if (is(DOMException)(err)) {
             // Something went wrong when trying to access localStorage.
             return {
                 status: Status.LOCALSTORAGE_ERROR,
