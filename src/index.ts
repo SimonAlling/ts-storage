@@ -30,17 +30,16 @@ export function get<T>(key: string, fallback: T): Response<T> {
             };
         }
     } catch (err) {
-        let status;
-        if (is(SyntaxError)(err)) {
+        const status = (
             // The saved value could not be parsed.
-            status = Status.JSON_ERROR;
-        } else if (is(TypeError)(err)) {
+            is(SyntaxError)(err) ? Status.JSON_ERROR
+            :
             // The saved value had the wrong type.
-            status = Status.TYPE_ERROR;
-        } else {
+            is(TypeError)(err) ? Status.TYPE_ERROR
+            :
             // Something went wrong when trying to access localStorage.
-            status = Status.LOCALSTORAGE_ERROR;
-        }
+            Status.LOCALSTORAGE_ERROR
+        );
         return {
             status: status,
             value: fallback,
@@ -56,19 +55,17 @@ export function set<T>(key: string, value: T): Response<T> {
             value: value,
         };
     } catch (err) {
-        if (is(DOMException)(err)) {
-            // Something went wrong when trying to access localStorage.
-            return {
-                status: Status.LOCALSTORAGE_ERROR,
-                value: value,
-            };
-        } else {
+        const status = (
             // Something went wrong when trying to stringify to JSON.
-            return {
-                status: Status.JSON_ERROR,
-                value: value,
-            };
-        }
+            is(SyntaxError)(err) || is(TypeError)(err) ? Status.JSON_ERROR
+            :
+            // Something went wrong when trying to access localStorage.
+            Status.LOCALSTORAGE_ERROR
+        );
+        return {
+            status: status,
+            value: value,
+        };
     }
 }
 
