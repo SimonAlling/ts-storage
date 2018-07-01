@@ -1,4 +1,4 @@
-import { is, isLike, isNull } from "ts-type-guards";
+import { is, isLike, isNull, isNumber } from "ts-type-guards";
 
 export const enum Status {
     OK,
@@ -12,6 +12,12 @@ export interface Response<T> {
     status: Status;
     value: T;
 }
+
+const SPECIAL_NUMBERS: { readonly [key: string]: number } = {
+    "Infinity": Infinity,
+    "-Infinity": -Infinity,
+    "NaN": NaN,
+};
 
 export function get<T>(key: string, fallback: T): Response<T> {
     try {
@@ -75,6 +81,11 @@ function readFromLocalStorage<T>(key: string, reference: T): T | null {
     if (isNull(readValue)) {
         return null;
     }
+    // Handle ±Infinity and NaN:
+    const specialNumber: number | undefined = SPECIAL_NUMBERS[readValue];
+    if (isLike(reference)(specialNumber)) {
+        return specialNumber;
+    }
     // Throws SyntaxError:
     const parsedValue: any = JSON.parse(readValue);
     if (isLike(reference)(parsedValue)) {
@@ -85,7 +96,17 @@ function readFromLocalStorage<T>(key: string, reference: T): T | null {
 
 function saveToLocalStorage<T>(key: string, value: T): void {
     // Throws TypeError etc:
-    const stringifiedValue: string = JSON.stringify(value);
+    const stringifiedValue: string = stringify(value);
     // Throws DOMException:
     localStorage.setItem(key, stringifiedValue);
+}
+
+function stringify(x: any): string {
+    for (const representation in SPECIAL_NUMBERS) {
+        const n = SPECIAL_NUMBERS[representation];
+        if (x === n || Number.isNaN(x) && Number.isNaN(n)) {
+            return representation;
+        }
+    }
+    return JSON.stringify(x);
 }
