@@ -19,7 +19,9 @@ const SPECIAL_NUMBERS: { readonly [key: string]: number } = {
     "NaN": NaN,
 };
 
-export function get<T>(key: string, fallback: T): Response<T> {
+export type AllowedTypes = boolean | number | string;
+
+export function get<T extends AllowedTypes>(key: string, fallback: T): Response<T> {
     try {
         const savedValue: T | null = readFromLocalStorage(key, fallback);
         if (isNull(savedValue)) {
@@ -53,7 +55,7 @@ export function get<T>(key: string, fallback: T): Response<T> {
     }
 }
 
-export function set<T>(key: string, value: T): Response<T> {
+export function set<T extends AllowedTypes>(key: string, value: T): Response<T> {
     try {
         saveToLocalStorage(key, value);
         return {
@@ -75,7 +77,7 @@ export function set<T>(key: string, value: T): Response<T> {
     }
 }
 
-function readFromLocalStorage<T>(key: string, reference: T): T | null {
+function readFromLocalStorage<T extends AllowedTypes>(key: string, reference: T): T | null {
     // Throws DOMException:
     const readValue: string | null = localStorage.getItem(key);
     if (isNull(readValue)) {
@@ -94,7 +96,7 @@ function readFromLocalStorage<T>(key: string, reference: T): T | null {
     throw new TypeError(`Saved value had wrong type.`);
 }
 
-function saveToLocalStorage<T>(key: string, value: T): void {
+function saveToLocalStorage<T extends AllowedTypes>(key: string, value: T): void {
     // Throws TypeError etc:
     const stringifiedValue: string = stringify(value);
     // Throws DOMException:
