@@ -1,6 +1,6 @@
 {
   "name": "ts-storage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Type-safe storage library with fallback values",
   "keywords": [
     "type-safe",
