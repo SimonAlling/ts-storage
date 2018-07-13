@@ -23,6 +23,7 @@
   "bugs": {
     "url": "https://github.com/simonalling/ts-storage"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -31,7 +32,7 @@
     "verify": "npm run build && npm run lint"
   },
   "dependencies": {
-    "ts-type-guards": "^0.3.0"
+    "ts-type-guards": "^0.4.0"
   },
   "devDependencies": {
     "tslint": "^5.9.1",
