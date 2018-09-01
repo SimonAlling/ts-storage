@@ -5,7 +5,7 @@ export const enum Status {
     ABSENT,
     TYPE_ERROR,
     JSON_ERROR,
-    LOCALSTORAGE_ERROR,
+    STORAGE_ERROR,
 }
 
 export interface Response<T> {
@@ -22,8 +22,24 @@ const SPECIAL_NUMBERS: { readonly [key: string]: number } = {
 export type AllowedTypes = boolean | number | string;
 
 export function get<T extends AllowedTypes>(key: string, fallback: T): Response<T> {
+    return getFrom(localStorage, key, fallback);
+}
+
+export function get_session<T extends AllowedTypes>(key: string, fallback: T): Response<T> {
+    return getFrom(sessionStorage, key, fallback);
+}
+
+export function set<T extends AllowedTypes>(key: string, value: T): Response<T> {
+    return setIn(localStorage, key, value);
+}
+
+export function set_session<T extends AllowedTypes>(key: string, value: T): Response<T> {
+    return setIn(sessionStorage, key, value);
+}
+
+function getFrom<T extends AllowedTypes>(storage: Storage, key: string, fallback: T): Response<T> {
     try {
-        const savedValue: T | null = readFromLocalStorage(key, fallback);
+        const savedValue: T | null = readFrom(storage, key, fallback);
         if (isNull(savedValue)) {
             // There was no saved value.
             return {
@@ -45,8 +61,8 @@ export function get<T extends AllowedTypes>(key: string, fallback: T): Response<
             // The saved value had the wrong type.
             is(TypeError)(err) ? Status.TYPE_ERROR
             :
-            // Something went wrong when trying to access localStorage.
-            Status.LOCALSTORAGE_ERROR
+            // Something went wrong when trying to access storage.
+            Status.STORAGE_ERROR
         );
         return {
             status,
@@ -55,9 +71,9 @@ export function get<T extends AllowedTypes>(key: string, fallback: T): Response<
     }
 }
 
-export function set<T extends AllowedTypes>(key: string, value: T): Response<T> {
+function setIn<T extends AllowedTypes>(storage: Storage, key: string, value: T): Response<T> {
     try {
-        saveToLocalStorage(key, value);
+        saveIn(storage, key, value);
         return {
             status: Status.OK,
             value,
@@ -67,8 +83,8 @@ export function set<T extends AllowedTypes>(key: string, value: T): Response<T> 
             // Something went wrong when trying to stringify to JSON.
             is(SyntaxError)(err) || is(TypeError)(err) ? Status.JSON_ERROR
             :
-            // Something went wrong when trying to access localStorage.
-            Status.LOCALSTORAGE_ERROR
+            // Something went wrong when trying to access storage.
+            Status.STORAGE_ERROR
         );
         return {
             status,
@@ -77,9 +93,9 @@ export function set<T extends AllowedTypes>(key: string, value: T): Response<T> 
     }
 }
 
-function readFromLocalStorage<T extends AllowedTypes>(key: string, reference: T): T | null {
+function readFrom<T extends AllowedTypes>(storage: Storage, key: string, reference: T): T | null {
     // Throws DOMException:
-    const readValue: string | null = localStorage.getItem(key);
+    const readValue: string | null = storage.getItem(key);
     if (isNull(readValue)) {
         return null;
     }
@@ -96,11 +112,11 @@ function readFromLocalStorage<T extends AllowedTypes>(key: string, reference: T)
     throw new TypeError(`Saved value had wrong type.`);
 }
 
-function saveToLocalStorage<T extends AllowedTypes>(key: string, value: T): void {
+function saveIn<T extends AllowedTypes>(storage: Storage, key: string, value: T): void {
     // Throws TypeError etc:
     const stringifiedValue: string = stringify(value);
     // Throws DOMException:
-    localStorage.setItem(key, stringifiedValue);
+    storage.setItem(key, stringifiedValue);
 }
 
 function stringify(x: any): string {
