@@ -37,6 +37,14 @@ export function set_session<T extends AllowedTypes>(key: string, value: T): Resp
     return setIn(sessionStorage, key, value);
 }
 
+export function remove(key: string): Response<boolean> {
+    return removeIn(localStorage, key);
+}
+
+export function remove_session(key: string): Response<boolean> {
+    return removeIn(sessionStorage, key);
+}
+
 function getFrom<T extends AllowedTypes>(storage: Storage, key: string, fallback: T): Response<T> {
     try {
         const savedValue: T | null = readFrom(storage, key, fallback);
@@ -89,6 +97,21 @@ function setIn<T extends AllowedTypes>(storage: Storage, key: string, value: T):
         return {
             status,
             value,
+        };
+    }
+}
+
+function removeIn(storage: Storage, key: string): Response<boolean> {
+    try {
+        storage.removeItem(key);
+        return {
+            status: Status.OK,
+            value: true,
+        };
+    } catch (err) {
+        return {
+            status: Status.STORAGE_ERROR,
+            value: false,
         };
     }
 }
