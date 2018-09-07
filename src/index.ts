@@ -1,4 +1,5 @@
 import { is, isLike, isNull, isNumber } from "ts-type-guards";
+import * as JSON5 from "json5";
 
 export const enum Status {
     OK,
@@ -13,13 +14,13 @@ export interface Response<T> {
     value: T;
 }
 
-const SPECIAL_NUMBERS: { readonly [key: string]: number } = {
-    "Infinity": Infinity,
-    "-Infinity": -Infinity,
-    "NaN": NaN,
-};
+export type BasicTypes = boolean | number | string
 
-export type AllowedTypes = boolean | number | string;
+export type Dictionary<K extends string, T extends { [key in K]: AllowedTypes }> = T
+
+export type ItemTypes = BasicTypes | Dictionary<string, { [key: string]: AllowedTypes }>
+
+export type AllowedTypes = ItemTypes | ReadonlyArray<ItemTypes>
 
 export function get<T extends AllowedTypes>(key: string, fallback: T): Response<T> {
     return getFrom(localStorage, key, fallback);
@@ -122,13 +123,8 @@ function readFrom<T extends AllowedTypes>(storage: Storage, key: string, referen
     if (isNull(readValue)) {
         return null;
     }
-    // Handle ±Infinity and NaN:
-    const specialNumber: number | undefined = SPECIAL_NUMBERS[readValue];
-    if (isLike(reference)(specialNumber)) {
-        return specialNumber;
-    }
     // Throws SyntaxError:
-    const parsedValue: any = JSON.parse(readValue);
+    const parsedValue: any = JSON5.parse(readValue);
     if (isLike(reference)(parsedValue)) {
         return parsedValue;
     }
@@ -137,17 +133,7 @@ function readFrom<T extends AllowedTypes>(storage: Storage, key: string, referen
 
 function saveIn<T extends AllowedTypes>(storage: Storage, key: string, value: T): void {
     // Throws TypeError etc:
-    const stringifiedValue: string = stringify(value);
+    const stringifiedValue: string = JSON5.stringify(value);
     // Throws DOMException:
     storage.setItem(key, stringifiedValue);
-}
-
-function stringify(x: any): string {
-    for (const representation in SPECIAL_NUMBERS) {
-        const n = SPECIAL_NUMBERS[representation];
-        if (x === n || Number.isNaN(x) && Number.isNaN(n)) {
-            return representation;
-        }
-    }
-    return JSON.stringify(x);
 }
