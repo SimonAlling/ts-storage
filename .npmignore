@@ -1,3 +1,5 @@
 src/
+__test__/
 tsconfig.json
+tslint.json
 *.tgz
