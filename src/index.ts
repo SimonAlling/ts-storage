@@ -2,11 +2,11 @@ import { is, isLike, isNull, isNumber } from "ts-type-guards";
 import * as JSON5 from "json5";
 
 export const enum Status {
-    OK,
-    ABSENT,
-    TYPE_ERROR,
-    JSON_ERROR,
-    STORAGE_ERROR,
+    OK = "OK",
+    ABSENT = "ABSENT",
+    TYPE_ERROR = "TYPE_ERROR",
+    JSON_ERROR = "JSON_ERROR",
+    STORAGE_ERROR = "STORAGE_ERROR",
 }
 
 export interface Response<T> {
