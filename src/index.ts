@@ -14,13 +14,15 @@ export interface Response<T> {
     value: T;
 }
 
-export type BasicTypes = boolean | number | string
+type BasicTypes = boolean | number | string
 
 export type Dictionary<K extends string, T extends { [key in K]: AllowedTypes }> = T
 
-export type ItemTypes = BasicTypes | Dictionary<string, { [key: string]: AllowedTypes }>
+type DictionaryType = Dictionary<string, { readonly [key: string]: AllowedTypes }>
 
-export type AllowedTypes = ItemTypes | ReadonlyArray<ItemTypes>
+interface ArrayType extends ReadonlyArray<AllowedTypes> {}
+
+export type AllowedTypes = BasicTypes | ArrayType | DictionaryType
 
 export function get<T extends AllowedTypes>(key: string, fallback: T): Response<T> {
     return getFrom(localStorage, key, fallback);
