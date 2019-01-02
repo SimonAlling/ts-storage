@@ -43,8 +43,6 @@
     ]
   },
   "dependencies": {
-    "@types/json5": "0.0.30",
-    "json5": "^2.0.1",
     "ts-type-guards": "^0.6.0"
   },
   "devDependencies": {

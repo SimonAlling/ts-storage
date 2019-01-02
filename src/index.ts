@@ -1,5 +1,4 @@
 import { is, isLike, isNull, isNumber } from "ts-type-guards";
-import * as JSON5 from "json5";
 
 export const enum Status {
     OK = "OK",
@@ -7,6 +6,7 @@ export const enum Status {
     TYPE_ERROR = "TYPE_ERROR",
     JSON_ERROR = "JSON_ERROR",
     STORAGE_ERROR = "STORAGE_ERROR",
+    NUMBER_ERROR = "NUMBER_ERROR",
 }
 
 export interface Response<T> {
@@ -89,6 +89,9 @@ function setIn<T extends AllowedTypes>(storage: Storage, key: string, value: T):
         };
     } catch (err) {
         const status = (
+            // Value was or contained -Infinity, Infinity or NaN.
+            is(RangeError)(err) ? Status.NUMBER_ERROR
+            :
             // Something went wrong when trying to stringify to JSON.
             is(SyntaxError)(err) || is(TypeError)(err) ? Status.JSON_ERROR
             :
@@ -124,7 +127,7 @@ function readFrom<T extends AllowedTypes>(storage: Storage, key: string, referen
         return null;
     }
     // Throws SyntaxError:
-    const parsedValue: any = JSON5.parse(readValue);
+    const parsedValue: any = JSON.parse(readValue);
     if (isLike(reference)(parsedValue)) {
         return parsedValue;
     }
@@ -132,8 +135,14 @@ function readFrom<T extends AllowedTypes>(storage: Storage, key: string, referen
 }
 
 function saveIn<T extends AllowedTypes>(storage: Storage, key: string, value: T): void {
-    // Throws TypeError etc:
-    const stringifiedValue: string = JSON5.stringify(value);
+    const replacer = (_key: string, v: any) => {
+        if (typeof v === "number" && !Number.isFinite(v)) {
+            throw new RangeError(v.toString());
+        }
+        return v;
+    }
+    // Throws TypeError, RangeError etc:
+    const stringifiedValue: string = JSON.stringify(value, replacer);
     // Throws DOMException:
     storage.setItem(key, stringifiedValue);
 }
